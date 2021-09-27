@@ -16,7 +16,7 @@ import sys
 
 
 class omnitick():
-    '''Omniticker is a lightweight desktop cryptocurrecy market tracker. This will become comphrensive tracker of all financial markets. I send my thanks to the CoinCapAPI developers.'''
+    '''Omniticker is a lightweight desktop cryptocurrecy market tracker. This will become comphrensive tracker of all financial markets. I send my thanks to the CoinCapAPI, LunarCrush developers.'''
 
 ###***CLASS ATTRIBUTES***###
     failures, attempts = 0,0
@@ -31,59 +31,6 @@ class omnitick():
     gcmc=[]
 
 ###***METHODS***###
-
-    def milbil(self,bignumber):
-        if bignumber > 1000000000000: return '$'+ str(round(round(bignumber,-9)/1000000000000,2))+'T'
-        elif bignumber > 1000000000:  return '$'+ str(round(round(bignumber,-6)/1000000000,2))+'B'
-        elif bignumber > 1000000:     return '$'+ str(round(round(bignumber,-3)/1000000,2))+'M'
-        return bignumber
-
-    def fetchCoinCap(self):
-        print('fCC')
-###GET###
-        while self.json_data == None:
-            self.attempts+=1
-            try:
-                self.response = requests.request("GET", self.capURL, headers=self.headers, data = self.payload)
-                self.json_data = json.loads(self.response.text.encode('utf8'))
-            except Exception as ex:
-                print("An exception of type {0} occurred. Arguments:\n{1!r}".format(type(ex).__name__, ex.args))
-                self.failures+=1
-                print('MARKET Query failure: '+str(self.failures)+'/'+str(self.attempts)+'. Attempting again in 9.001 seconds.')
-                time.sleep(10)
-
-##***********FORMATTING******************##
-        self.gcmc.append('${:,}'.format(math.floor(pd.DataFrame(self.json_data['data'])['marketCapUsd'].agg(lambda x:float(x)).sum())))
-        self.bitcoin_data = pd.DataFrame(self.json_data["data"])[['rank','name','symbol','priceUsd','changePercent24Hr','vwap24Hr','marketCapUsd']]
-
-        sList=[]
-        for x in self.bitcoin_data[['rank','name','symbol']].iterrows(): sList.append(x[1][0]+'. '+x[1][1]+' ('+x[1][2]+')')
-        self.bitcoin_data['name']=pd.DataFrame(sList)
-        self.bitcoin_data.drop(['rank','symbol'],axis=1,inplace=True)
-
-        self.bitcoin_data['priceUsd'] = pd.to_numeric(self.bitcoin_data['priceUsd']).round(7)
-        self.bitcoin_data['priceUsd'] = self.bitcoin_data['priceUsd'].apply(lambda x:'$' + str('{:,}'.format(x)))
-
-        self.bitcoin_data['changePercent24Hr'] = pd.to_numeric(self.bitcoin_data['changePercent24Hr']).round(3)
-        self.bitcoin_data['changePercent24Hr'] = self.bitcoin_data['changePercent24Hr'].apply(lambda x: str(x)+'%')
-
-        self.bitcoin_data['vwap24Hr'] = pd.to_numeric(self.bitcoin_data['vwap24Hr']).round(4).apply(lambda x:'$' + str('{:,}'.format(x)))
-        self.bitcoin_data['marketCapUsd'] = self.bitcoin_data['marketCapUsd'].apply(lambda x:math.floor(float(x))).apply(lambda x: self.milbil(x))
-
-    def fetchLunarCrush(self):
-        pass
-
-    def btcHistoric(self):
-            while self.json_data == None:
-                self.attempts+=1
-                try:
-                    self.response = requests.request("GET", self.capBTChisURL, headers=self.BTC_HIS_headers, data = self.BTC_HIS_payload)
-                    self.json_data = json.loads(self.response.text.encode('utf8'))
-                except Exception:
-                    self.failures+=1
-                    print('HISTORIC Query failure: '+str(self.failures)+'/'+str(self.attempts)+'. Attempting again in 10 seconds.')
-                    time.sleep(10)
-
     def displayWindow(self):
 
         shortDate= datetime.now()
@@ -110,8 +57,69 @@ class omnitick():
 
         lbl2 = tk.Label(self.window, text=self.bitcoin_data.iloc[50:101].to_string(index=False,header=False),font=('verdana',9),wraplength=760, bg='black', fg='#90EE90').grid(column=2, row=2)
 
-        self.window.protocol("WM_DELETE_WINDOW", exec('sys.exit(0)'))
-        self.window.mainloop()
+
+
+
+
+
+    def milbil(self,bignumber):
+        if bignumber > 1000000000000: return '$'+ str(round(round(bignumber,-9)/1000000000000,2))+'T'
+        elif bignumber > 1000000000:  return '$'+ str(round(round(bignumber,-6)/1000000000,2))+'B'
+        elif bignumber > 1000000:     return '$'+ str(round(round(bignumber,-3)/1000000,2))+'M'
+        return bignumber
+
+    def fetchCoinCap(self):
+        self.json_data=None
+        print('fCC')
+        try:
+            self.response = requests.request("GET", self.capURL, headers=self.headers, data = self.payload)
+            self.json_data = json.loads(self.response.text.encode('utf8'))
+            self.gcmc.append('${:,}'.format(math.floor(pd.DataFrame(self.json_data['data'])['marketCapUsd'].agg(lambda x:float(x)).sum())))
+            self.bitcoin_data = pd.DataFrame(self.json_data["data"])[['rank','name','symbol','priceUsd','changePercent24Hr','vwap24Hr','marketCapUsd']]
+
+            sList=[]
+            for x in self.bitcoin_data[['rank','name','symbol']].iterrows(): sList.append(x[1][0]+'. '+x[1][1]+' ('+x[1][2]+')')
+            self.bitcoin_data['name']=pd.DataFrame(sList)
+            self.bitcoin_data.drop(['rank','symbol'],axis=1,inplace=True)
+
+            self.bitcoin_data['priceUsd'] = pd.to_numeric(self.bitcoin_data['priceUsd']).round(7)
+            self.bitcoin_data['priceUsd'] = self.bitcoin_data['priceUsd'].apply(lambda x:'$' + str('{:,}'.format(x)))
+
+            self.bitcoin_data['changePercent24Hr'] = pd.to_numeric(self.bitcoin_data['changePercent24Hr']).round(3)
+            self.bitcoin_data['changePercent24Hr'] = self.bitcoin_data['changePercent24Hr'].apply(lambda x: str(x)+'%')
+
+            self.bitcoin_data['vwap24Hr'] = pd.to_numeric(self.bitcoin_data['vwap24Hr']).round(4).apply(lambda x:'$' + str('{:,}'.format(x)))
+            self.bitcoin_data['marketCapUsd'] = self.bitcoin_data['marketCapUsd'].apply(lambda x:math.floor(float(x))).apply(lambda x: self.milbil(x))
+            self.displayWindow()
+        except Exception as ex:
+            print("An exception of type {0} occurred. Arguments:\n{1!r}".format(type(ex).__name__, ex.args))
+            self.failures+=1
+            print('MARKET Query failure: '+str(self.failures)+'/'+str(self.attempts)+'. Attempting again in 10 seconds.')
+            time.sleep(10)
+            self.fetchCoinCap()
+
+    def fUpdate(self):
+        self.fetchCoinCap()
+        self.window.after(13333,self.fUpdate)
+
+
+
+##***********FORMATTING******************##
+
+
+    def fetchLunarCrush(self):
+        pass
+
+    def btcHistoric(self):
+            while self.json_data == None:
+                self.attempts+=1
+                try:
+                    self.response = requests.request("GET", self.capBTChisURL, headers=self.BTC_HIS_headers, data = self.BTC_HIS_payload)
+                    self.json_data = json.loads(self.response.text.encode('utf8'))
+                except Exception:
+                    self.failures+=1
+                    print('HISTORIC Query failure: '+str(self.failures)+'/'+str(self.attempts)+'. Attempting again in 10 seconds.')
+                    time.sleep(10)
 
 
     def __init__(self):
@@ -139,24 +147,19 @@ class omnitick():
 
         self.window.config(menu=menubar)
 '''
+
         self.window.minsize(1000,770)
         self.window.title('OmniTicker')
         self.window.iconphoto(True,tk.PhotoImage(file='btc2.bmp'))
-
-        while True:
-            self.fetchCoinCap()
-            self.displayWindow()
-            time.sleep(5)
-
+        #self.window.protocol("WM_DELETE_WINDOW", exec('sys.exit(0)'))
+        self.fetchCoinCap()
+        self.window.after(12000,self.fUpdate)
+        self.window.mainloop()
 
 
 
 
 
-
-
-
-##***********UI******************##
 
 
 
