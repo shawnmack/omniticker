@@ -57,11 +57,6 @@ class omnitick():
 
         lbl2 = tk.Label(self.window, text=self.bitcoin_data.iloc[50:101].to_string(index=False,header=False),font=('verdana',9),wraplength=760, bg='black', fg='#90EE90').grid(column=2, row=2)
 
-
-
-
-
-
     def milbil(self,bignumber):
         if bignumber > 1000000000000: return '$'+ str(round(round(bignumber,-9)/1000000000000,2))+'T'
         elif bignumber > 1000000000:  return '$'+ str(round(round(bignumber,-6)/1000000000,2))+'B'
@@ -71,6 +66,7 @@ class omnitick():
     def fetchCoinCap(self):
         self.json_data=None
         print('fCC')
+        self.attempts+=1
         try:
             self.response = requests.request("GET", self.capURL, headers=self.headers, data = self.payload)
             self.json_data = json.loads(self.response.text.encode('utf8'))
@@ -92,20 +88,15 @@ class omnitick():
             self.bitcoin_data['marketCapUsd'] = self.bitcoin_data['marketCapUsd'].apply(lambda x:math.floor(float(x))).apply(lambda x: self.milbil(x))
             self.displayWindow()
         except Exception as ex:
-            print("An exception of type {0} occurred. Arguments:\n{1!r}".format(type(ex).__name__, ex.args))
+            #print("An exception of type {0} occurred. Arguments:\n{1!r}".format(type(ex).__name__, ex.args))
             self.failures+=1
-            print('MARKET Query failure: '+str(self.failures)+'/'+str(self.attempts)+'. Attempting again in 10 seconds.')
-            time.sleep(10)
+            print('MARKET Query failure: '+str(self.failures)+'/'+str(self.attempts)+'. Attempting again in 20 seconds.')
+            time.sleep(20)
             self.fetchCoinCap()
 
     def fUpdate(self):
         self.fetchCoinCap()
-        self.window.after(13333,self.fUpdate)
-
-
-
-##***********FORMATTING******************##
-
+        self.window.after(20000,self.fUpdate)
 
     def fetchLunarCrush(self):
         pass
@@ -118,11 +109,11 @@ class omnitick():
                     self.json_data = json.loads(self.response.text.encode('utf8'))
                 except Exception:
                     self.failures+=1
-                    print('HISTORIC Query failure: '+str(self.failures)+'/'+str(self.attempts)+'. Attempting again in 10 seconds.')
-                    time.sleep(10)
+                    print('HISTORIC Query failure: '+str(self.failures)+'/'+str(self.attempts)+'. Attempting again in 20 seconds.')
+                    time.sleep(20)
 
 
-    def __init__(self):
+    def __init__(self,new=False):
 
         self.window = tk.Tk()
         ###***FAKE MENUS***###
