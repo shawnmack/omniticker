@@ -10,13 +10,8 @@ import numpy as np
 import math
 import sys
 
-#import lunarcrush
-
-
-
-
 class omnitick():
-    '''Omniticker is a lightweight desktop cryptocurrecy market tracker. This will become comphrensive tracker of all financial markets. I send my thanks to the CoinCapAPI, LunarCrush developers.'''
+    '''Omniticker is a lightweight desktop cryptocurrecy market tracker. This will become comphrensive tracker of all financial markets(I care about). I send my thanks to the CoinCapAPI, LunarCrush developers.'''
 
 ###***CLASS ATTRIBUTES***###
     failures, attempts = 0,0
@@ -146,15 +141,6 @@ class omnitick():
         self.fetchCoinCap()
         self.window.after(12000,self.fUpdate)
         self.window.mainloop()
-
-
-
-
-
-
-
-
-
 
 
 ###HISTORICAL DATA TEMPLATE API AND coincap dataframe attributes
